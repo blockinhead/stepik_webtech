@@ -1,6 +1,9 @@
+
 sudo /etc/init.d/mysql start
 mysql -uroot -e "create database stepic_webtech;"
 mysql -uroot -e "grant all privileges on stepic_webtech.* to 'box'@'localhost' with grant option;"
+
+pkill -f gunicorn
 
 cd ~/web/ask/
 python ./manage.py makemigrations

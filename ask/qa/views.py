@@ -2,7 +2,8 @@ from django.shortcuts import render
 
 # Create your views here.
 from django.http import HttpResponse 
-from model import Question, Answer
+from django.core.paginator import Paginator
+from qa.models import Question, Answer
 
 
 def test(request, *args, **kwargs):
@@ -37,7 +38,7 @@ def new_questions(request, *args, **kwargs):
 
 
 def popular_questions(request):
-    return paginator(request
+    return paginator(request,
                      Question.objects.popular(),
                      '/popular/?page=',
                      'qa/popular_questions.html')
@@ -49,7 +50,7 @@ def question_details(request, pk):
         raise Http404     
 
     return render(request, 
-                  'question_details.html', 
+                  'qa/question_details.html', 
                   {'question': question,
                    'answers': Answer.objects.filter(question=question)[:]})
 
