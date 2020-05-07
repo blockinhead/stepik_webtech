@@ -1,9 +1,10 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 
 # Create your views here.
-from django.http import HttpResponse 
+from django.http import HttpResponse, HttpResponseRedirect
 from django.core.paginator import Paginator
 from qa.models import Question, Answer
+from qa.forms import AskForm, AnswerFrom
 
 
 def test(request, *args, **kwargs):
@@ -43,14 +44,38 @@ def popular_questions(request):
                      '/popular/?page=',
                      'qa/popular_questions.html')
 
+
 def question_details(request, pk):
-    try:
-        question = Question.objects.get(pk=pk)
-    except Post.DoesNotExist:         
-        raise Http404     
+    question = get_object_or_404(Question, id=pk) 
+    answers = Answer.objects.filter(question=question)
+
+    if request.method == 'POST':
+        form = AnswerFrom(request.POST)
+        if form.is_valid():
+            form.clean()
+            form.save()
+            return HttpResponseRedirect(question.get_url())
+        else:
+            form = AnswerFrom(initial={'question': pk})
+
 
     return render(request, 
                   'qa/question_details.html', 
                   {'question': question,
-                   'answers': Answer.objects.filter(question=question)[:]})
+                   'answers': answers[:],
+                   'form': form})
 
+
+def question_add(request):
+    if request.method == 'POST':
+        form = AskForm(request.POST)
+        if form.is_valid():
+            form.clean()
+            new_question = form.save()
+            return HttpResponseRedirect(new_question.get_url())
+    else:
+        form = AskForm()
+
+    return render(request,
+                  'qa/question_add.html',
+                  {'form': form})
