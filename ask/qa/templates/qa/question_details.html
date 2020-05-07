@@ -2,7 +2,12 @@
 <br />
 {{question.title}}
 <br />
-
+<form action="{% url 'question_details' question.id %}">
+  {% csrf_token %}
+  <ul>
+    {{ form.as_uk }}
+  </ul>
+</form>
 {% for answer in answers %}
   {{answer.text}}
   <br />

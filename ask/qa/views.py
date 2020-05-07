@@ -4,7 +4,7 @@ from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect
 from django.core.paginator import Paginator
 from qa.models import Question, Answer
-from qa.forms import AskForm, AnswerFrom
+from qa.forms import AskForm, AnswerForm
 
 
 def test(request, *args, **kwargs):
@@ -50,13 +50,13 @@ def question_details(request, pk):
     answers = Answer.objects.filter(question=question)
 
     if request.method == 'POST':
-        form = AnswerFrom(request.POST)
+        form = AnswerForm(request.POST)
         if form.is_valid():
             form.clean()
             form.save()
             return HttpResponseRedirect(question.get_url())
-        else:
-            form = AnswerFrom(initial={'question': pk})
+    else:
+        form = AnswerForm(initial={'question': pk})
 
 
     return render(request, 
