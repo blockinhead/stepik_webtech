@@ -3,8 +3,10 @@ from django.shortcuts import render, get_object_or_404
 # Create your views here.
 from django.http import HttpResponse, HttpResponseRedirect
 from django.core.paginator import Paginator
+from django.urls import reverse
+from django.contrib.auth import authenticate, login
 from qa.models import Question, Answer
-from qa.forms import AskForm, AnswerForm
+from qa.forms import AskForm, AnswerForm, SignUpForm, LoginForm
 
 
 def test(request, *args, **kwargs):
@@ -53,7 +55,7 @@ def question_details(request, pk):
         form = AnswerForm(request.POST)
         if form.is_valid():
             form.clean()
-            form.save()
+            form.save(author=request.user)
             return HttpResponseRedirect(question.get_url())
     else:
         form = AnswerForm(initial={'question': pk})
@@ -71,7 +73,7 @@ def question_add(request):
         form = AskForm(request.POST)
         if form.is_valid():
             form.clean()
-            new_question = form.save()
+            new_question = form.save(author=request.user)
             return HttpResponseRedirect(new_question.get_url())
     else:
         form = AskForm()
@@ -79,3 +81,36 @@ def question_add(request):
     return render(request,
                   'qa/question_add.html',
                   {'form': form})
+
+
+def signup(request):
+   if request.method == 'POST':
+      form = SignUpForm(request.POST)
+      if form.is_valid():
+          form.save()
+          username = form.cleaned_data.get('username')
+          password = form.cleaned_data.get('password1')
+          user = authenticate(username=username, password=password)
+          login(request, user)
+          return HttpResponseRedirect(reverse('main_page'))
+    else:
+        form = SignUpForm()
+        return render(request, 
+                      'signup.html', 
+                      {'form': form})
+
+
+def login(request):
+    if request.method == 'POST':
+        form = LoginForm(request.POST)
+        if form.is_valid():
+        username = form.cleaned_data.get('username')
+        password = form.cleaned_data.get('password1')
+        user = authenticate(username=username, password=password)
+        login(request, user)
+        return HttpResponseRedirect(reverse('main_page'))
+    else:
+        form = LoginForm()
+        return render(request, 
+                      'login.html', 
+                      {'form': form})

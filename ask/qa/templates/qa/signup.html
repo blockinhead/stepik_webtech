@@ -1,0 +1,6 @@
+<form action="{% url 'signup' %}">
+  {% csrf_token %}
+  <ul>
+    {{ form.as_ul }}
+  </ul>
+</form>

@@ -1,4 +1,5 @@
 from django import forms
+from django.contrib.auth.models import User
 from qa.models import Question, Answer
 
 
@@ -9,8 +10,8 @@ class AskForm(forms.Form):
     def clean(self):
         pass
 
-    def save(self):
-        question = Question(**self.cleaned_data)
+    def save(self, author=None):
+        question = Question(author=author, **self.cleaned_data)
         question.save()
         return question
 
@@ -23,7 +24,18 @@ class AnswerForm(forms.Form):
     def clean(self):
         pass
 
-    def save(self):
-        answer = Answer(**self.cleaned_data)
+    def save(self, author):
+        answer = Answer(author=author, **self.cleaned_data)
         answer.save()
         return answer   
+
+
+class SignUpForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'password', )
+
+
+class LoginForm(forms.Form):
+    username = forms.CharField()
+    password = forms.CharField(widget=forms.PasswordInput)
