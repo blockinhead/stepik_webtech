@@ -4,7 +4,8 @@ from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect
 from django.core.paginator import Paginator
 from django.urls import reverse
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate
+from django.contrib.auth import login as auth_login
 from qa.models import Question, Answer
 from qa.forms import AskForm, AnswerForm, SignUpForm, LoginForm
 
@@ -84,19 +85,19 @@ def question_add(request):
 
 
 def signup(request):
-   if request.method == 'POST':
-      form = SignUpForm(request.POST)
-      if form.is_valid():
-          form.save()
-          username = form.cleaned_data.get('username')
-          password = form.cleaned_data.get('password1')
-          user = authenticate(username=username, password=password)
-          login(request, user)
-          return HttpResponseRedirect(reverse('main_page'))
+    if request.method == 'POST':
+        form = SignUpForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            # username = form.cleaned_data.get('username')
+            # password = form.cleaned_data.get('password')
+            # user = authenticate(username=username, password=password)
+            auth_login(request, user)
+            return HttpResponseRedirect(reverse('main_page'))
     else:
         form = SignUpForm()
         return render(request, 
-                      'signup.html', 
+                      'qa/signup.html', 
                       {'form': form})
 
 
@@ -104,13 +105,14 @@ def login(request):
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():
-        username = form.cleaned_data.get('username')
-        password = form.cleaned_data.get('password1')
-        user = authenticate(username=username, password=password)
-        login(request, user)
-        return HttpResponseRedirect(reverse('main_page'))
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(username=username, password=password)
+            if user:
+                auth_login(request, user)
+            return HttpResponseRedirect(reverse('main_page'))
     else:
         form = LoginForm()
         return render(request, 
-                      'login.html', 
+                      'qa/login.html', 
                       {'form': form})
