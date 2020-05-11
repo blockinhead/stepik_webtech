@@ -4,10 +4,13 @@ from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse, HttpResponseRedirect
 from django.core.paginator import Paginator
 from django.urls import reverse
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, SESSION_KEY
 from django.contrib.auth import login as auth_login
 from qa.models import Question, Answer
 from qa.forms import AskForm, AnswerForm, SignUpForm, LoginForm
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 def test(request, *args, **kwargs):
@@ -89,8 +92,10 @@ def signup(request):
         form = SignUpForm(request.POST)
         if form.is_valid():
             user = form.save()
-            # username = form.cleaned_data.get('username')
-            # password = form.cleaned_data.get('password')
+            logger.debug('new user created! %s', user)
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            logger.debug('name / password: %s / %s', username, password)
             # user = authenticate(username=username, password=password)
             auth_login(request, user)
             return HttpResponseRedirect(reverse('main_page'))
@@ -100,16 +105,20 @@ def signup(request):
                       'qa/signup.html', 
                       {'form': form})
 
-
+# session cookie is not set on 10.42.153.224/login page
 def login(request):
     if request.method == 'POST':
         form = LoginForm(request.POST)
         if form.is_valid():
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password')
+            logger.debug('authenticating name / password: %s / %s', username, password)
             user = authenticate(username=username, password=password)
+            logger.debug('authenticated user %s', user)
             if user:
                 auth_login(request, user)
+                request.session.set_test_cookie()
+                request.session['sessionid'] = request.session[SESSION_KEY]
             return HttpResponseRedirect(reverse('main_page'))
     else:
         form = LoginForm()
