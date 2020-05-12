@@ -34,6 +34,13 @@ class SignUpForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ('username', 'email', 'password', )
+    
+    def save(self, commit=True):
+        user = super(RegistrationForm, self).save(commit=False)
+        user.set_password(user.password) # set password properly before commit
+        if commit:
+            user.save()
+        return user
 
 
 class LoginForm(forms.Form):
